@@ -1,11 +1,12 @@
 ﻿#pragma once
 
+#include "atlstr.h"
 #include <string>
 
 // 
-// mpserver namespace name
-// writter : ymin
-// ver 1
+// mp server tools namespace
+// writer : ymin
+// version : 1.1
 //
 namespace mps
 {
@@ -14,6 +15,7 @@ namespace mps
 	public:
 		cstring() {}
 		cstring(LPCTSTR src);
+		cstring(LPCSTR src);
 		LPCSTR c_str();
 
 		LPCTSTR operator=(LPCSTR right);
@@ -24,13 +26,13 @@ namespace mps
 	{
 		// format string
 		CStringW		Printf(LPCTSTR fmt, ...);
-		std::string		Printf(LPCSTR fmt, ...);
+		LPCSTR			Printf(LPCSTR fmt, ...);
 
 		// convert string
-		std::string		WtA(LPCTSTR wstr);	// convert CStringW->string
+		LPCSTR			WtA(LPCTSTR wstr);	// convert CStringW->string
 		CStringW		AtW(LPCSTR astr);	// convert string->CStringW
 		CStringW		U8tW(LPCSTR u8str);	// convert utf8->CStringW
-		std::string		WtU8(LPCTSTR wstr);	// convert CStringW->utf8
+		LPCSTR			WtU8(LPCTSTR wstr);	// convert CStringW->utf8
 
 		// string parser
 		BOOL			StringParser(IN LPCTSTR src, OUT CStringList& sl, LPCTSTR key = L";");

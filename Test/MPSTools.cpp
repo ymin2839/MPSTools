@@ -1,10 +1,5 @@
 ﻿#include "pch.h"
-#include "ServTool.h"
-
-#include <string>
-#include <algorithm>
-#include <utility>
-#include <sal.h>
+#include "MPSTools.h"
 
 #define MAX_PATH_LEN	260
 
@@ -13,6 +8,21 @@ namespace mps
 	cstring::cstring(LPCTSTR src)
 	{
 		this->Append(src);
+	}
+
+	cstring::cstring(LPCSTR astr)
+	{
+		int len = MultiByteToWideChar(CP_ACP, 0, astr, -1, NULL, NULL);
+		if (len > 0)
+		{
+			TCHAR* buffer = new TCHAR[len + 1]{};
+
+			MultiByteToWideChar(CP_ACP, 0, astr, -1, buffer, len);
+
+			this->Append(buffer);
+
+			delete[] buffer;
+		}
 	}
 
 	LPCSTR cstring::c_str()
@@ -39,7 +49,7 @@ namespace mps
 		int len = MultiByteToWideChar(CP_ACP, 0, right, -1, NULL, NULL);
 		if (len > 0)
 		{
-			WCHAR* buffer = new WCHAR[len + 1]{};
+			TCHAR* buffer = new TCHAR[len + 1]{};
 
 			MultiByteToWideChar(CP_ACP, 0, right, -1, buffer, len);
 
@@ -58,7 +68,7 @@ namespace mps
 		int len = MultiByteToWideChar(CP_ACP, 0, right.c_str(), -1, NULL, NULL);
 		if (len > 0)
 		{
-			WCHAR* buffer = new WCHAR[len + 1]{};
+			TCHAR* buffer = new TCHAR[len + 1]{};
 
 			MultiByteToWideChar(CP_ACP, 0, right.c_str(), -1, buffer, len);
 
@@ -73,7 +83,7 @@ namespace mps
 	}
 
 	namespace strutil {
-		std::string Printf(LPCSTR format, ...)
+		LPCSTR Printf(LPCSTR format, ...)
 		{
 			std::string rs;
 
@@ -92,7 +102,7 @@ namespace mps
 			}
 			va_end(args);
 
-			return rs;
+			return rs.c_str();
 		}
 
 		CStringW Printf(LPCTSTR format, ...)
@@ -105,7 +115,7 @@ namespace mps
 			int len = _vscwprintf(format, args) + 1;
 			if (len > 0)
 			{
-				WCHAR* buffer = new WCHAR[len] {};
+				TCHAR* buffer = new TCHAR[len] {};
 
 				vswprintf_s(buffer, len, format, args);
 
@@ -118,7 +128,7 @@ namespace mps
 			return rs;
 		}
 
-		std::string WtA(LPCTSTR wstr)
+		LPCSTR WtA(LPCTSTR wstr)
 		{
 			int len = WideCharToMultiByte(CP_ACP, 0, wstr, -1, NULL, 0, NULL, NULL);
 			if (len > 0)
@@ -131,7 +141,7 @@ namespace mps
 
 				delete[] buffer;
 
-				return rs;
+				return rs.c_str();
 			}
 
 			return "";
@@ -142,7 +152,7 @@ namespace mps
 			int len = MultiByteToWideChar(CP_ACP, 0, astr, -1, NULL, NULL);
 			if (len > 0)
 			{
-				WCHAR* buffer = new WCHAR[len + 1]{};
+				TCHAR* buffer = new TCHAR[len + 1]{};
 
 				MultiByteToWideChar(CP_ACP, 0, astr, -1, buffer, len);
 
@@ -161,7 +171,7 @@ namespace mps
 			int len = MultiByteToWideChar(CP_UTF8, 0, u8str, -1, 0, 0);
 			if (len > 0)
 			{
-				WCHAR* buffer = new WCHAR[len + 1]{};
+				TCHAR* buffer = new TCHAR[len + 1]{};
 
 				MultiByteToWideChar(CP_UTF8, 0, u8str, -1, buffer, len);
 
@@ -175,7 +185,7 @@ namespace mps
 			return _T("");
 		}
 
-		std::string WtU8(LPCTSTR wstr)
+		LPCSTR WtU8(LPCTSTR wstr)
 		{
 			int len = WideCharToMultiByte(CP_UTF8, 0, wstr, lstrlen(wstr), NULL, 0, NULL, NULL);
 			if (len)
@@ -184,7 +194,7 @@ namespace mps
 
 				WideCharToMultiByte(CP_UTF8, 0, wstr, -1, (LPSTR)rs.data(), len, NULL, NULL);
 
-				return rs;
+				return rs.c_str();
 			}
 
 			return "";
@@ -293,7 +303,7 @@ namespace mps
 
 		CString GetCurrPath()
 		{
-			WCHAR szPath[MAX_PATH_LEN] = L"";
+			TCHAR szPath[MAX_PATH_LEN] = L"";
 			GetModuleFileNameW(NULL, szPath, MAX_PATH_LEN);
 
 			CString strPath(szPath);
@@ -303,7 +313,7 @@ namespace mps
 
 		CString GetCurrAppName()
 		{
-			WCHAR szPath[MAX_PATH_LEN] = L"";
+			TCHAR szPath[MAX_PATH_LEN] = L"";
 			GetModuleFileNameW(NULL, szPath, MAX_PATH_LEN);
 
 			CString strPath(szPath);
@@ -313,7 +323,7 @@ namespace mps
 
 		CString GetCurrDirectory()
 		{
-			WCHAR szPath[MAX_PATH_LEN] = L"";
+			TCHAR szPath[MAX_PATH_LEN] = L"";
 			GetModuleFileNameW(NULL, szPath, MAX_PATH_LEN);
 
 			CString strPath(szPath);
@@ -469,8 +479,8 @@ namespace mps
 				procName.Append(L".exe");
 			}
 
-			WCHAR szName[MAX_PATH_LEN]{};
-			WCHAR szPath[MAX_PATH_LEN]{};
+			TCHAR szName[MAX_PATH_LEN]{};
+			TCHAR szPath[MAX_PATH_LEN]{};
 
 			HWND hwnd = FindWindowEx(NULL, NULL, NULL, NULL);
 			while (hwnd != NULL)
@@ -529,8 +539,8 @@ namespace mps
 				processName.Append(L".exe");
 			}
 
-			WCHAR szName[MAX_PATH_LEN]{};
-			WCHAR szPath[MAX_PATH_LEN]{};
+			TCHAR szName[MAX_PATH_LEN]{};
+			TCHAR szPath[MAX_PATH_LEN]{};
 
 			HWND hwnd = FindWindowEx(NULL, NULL, NULL, NULL);
 			while (hwnd != NULL)
@@ -730,7 +740,7 @@ namespace mps
 			if (::RegOpenKeyEx(hKey, subKey, 0, KEY_READ, &hKey) == ERROR_SUCCESS)
 			{
 				DWORD dwIndex = 0;
-				WCHAR subKeyName[MAX_PATH_LEN]{};
+				TCHAR subKeyName[MAX_PATH_LEN]{};
 
 				while (::RegEnumKey(hKey, dwIndex, subKeyName, MAX_PATH_LEN) != ERROR_NO_MORE_ITEMS)
 				{
@@ -814,7 +824,7 @@ namespace mps
 
 		CString GetCPUName()
 		{
-			wchar_t Cpu_info[100];
+			TCHAR Cpu_info[100];
 			HKEY hKey;
 			int i = 0;
 			long result = 0;
@@ -824,7 +834,7 @@ namespace mps
 			RegQueryValueEx(hKey, L"ProcessorNameString", NULL, NULL, (LPBYTE)Cpu_info, &c_size);
 			RegCloseKey(hKey);
 
-			wchar_t num[8];
+			TCHAR num[8];
 			SYSTEM_INFO systemInfo;
 			GetSystemInfo(&systemInfo);
 			swprintf(num, 8, L" * %d", systemInfo.dwNumberOfProcessors);
@@ -834,8 +844,8 @@ namespace mps
 
 		CString GetOSName()
 		{
-			wchar_t ProductName[100];
-			wchar_t CSDVersion[100];
+			TCHAR ProductName[100];
+			TCHAR CSDVersion[100];
 			std::wstring Os_info;
 
 			HKEY hKey;
