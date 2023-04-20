@@ -1,134 +1,207 @@
-﻿#include "pch.h"
+﻿#include "stdafx.h"
 #include "MPSTools.h"
+#include "atltime.h"
 #include <memory>
 
 #define MAX_PATH_LEN	260
 
 namespace mps
 {
-	cstring::cstring(LPCTSTR src)
+	string::string(const char* str)
+		: std::string(str)
 	{
-		Append(src);
 	}
 
-	cstring::cstring(LPCSTR astr)
+	string::string(const wchar_t* wstr)
 	{
-		int len = MultiByteToWideChar(CP_ACP, 0, astr, -1, NULL, NULL);
-		if (len > 0)
-		{
-			auto buffer = std::make_unique<TCHAR[]>(len + 1);
-
-			MultiByteToWideChar(CP_ACP, 0, astr, -1, buffer.get(), len);
-
-			Append(buffer.get());
-		}
-	}
-
-	LPCSTR cstring::c_str()
-	{
-		int len = WideCharToMultiByte(CP_ACP, 0, GetString(), -1, NULL, 0, NULL, NULL);
+		const int len(WideCharToMultiByte(CP_ACP, 0, wstr, -1, NULL, 0, NULL, NULL));
 		if (len > 0)
 		{
 			auto buffer = std::make_unique<char[]>(len + 1);
 
-			WideCharToMultiByte(CP_ACP, 0, GetString(), -1, buffer.get(), len, NULL, NULL);
+			WideCharToMultiByte(CP_ACP, 0, wstr, -1, buffer.get(), len, NULL, NULL);
 
-			return CStringA(buffer.get());
+			clear();
+			append(buffer.get());
 		}
-
-		return "";
 	}
 
-	LPCTSTR cstring::operator=(LPCSTR right)
+	string::string(const long long& num)
 	{
-		int len = MultiByteToWideChar(CP_ACP, 0, right, -1, NULL, NULL);
+		format("%I64d", num);
+	}
+
+	string::string(const std::string& src)
+	{
+		*this = src.c_str();
+	}
+
+	CString string::u8_wstr()
+	{
+		int len = MultiByteToWideChar(CP_UTF8, 0, c_str(), -1, 0, 0);
 		if (len > 0)
 		{
 			auto buffer = std::make_unique<TCHAR[]>(len + 1);
 
-			MultiByteToWideChar(CP_ACP, 0, right, -1, buffer.get(), len);
-
-			return CStringW (buffer.get());
-		}
-
-		return _T("");
-	}
-
-	LPCTSTR cstring::operator=(std::string right)
-	{
-		int len = MultiByteToWideChar(CP_ACP, 0, right.c_str(), -1, NULL, NULL);
-		if (len > 0)
-		{
-			auto buffer = std::make_unique<TCHAR[]>(len + 1);
-
-			MultiByteToWideChar(CP_ACP, 0, right.c_str(), -1, buffer.get(), len);
+			MultiByteToWideChar(CP_UTF8, 0, c_str(), -1, buffer.get(), len);
 
 			return CStringW(buffer.get());
 		}
 
-		return _T("");
+		return L"";
+	}
+
+	const char* string::u8_cstr()
+	{
+		std::wstring wstr = u8_wstr().operator LPCWSTR();
+
+		int len = WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, NULL, 0, NULL, NULL);
+		if (len > 0)
+		{
+			auto buffer = std::make_unique<char[]>(len + 1);
+
+			WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, buffer.get(), len, NULL, NULL);
+
+			clear();
+			append(buffer.get());
+		}
+
+		return c_str();
+	}
+
+	CString string::wstr()
+	{
+		int len = MultiByteToWideChar(CP_ACP, 0, c_str(), -1, NULL, NULL);
+		if (len > 0)
+		{
+			auto buffer = std::make_unique<wchar_t[]>(len + 1);
+
+			MultiByteToWideChar(CP_ACP, 0, c_str(), -1, buffer.get(), len);
+
+			return CString(buffer.get());
+		}
+
+		return L"";
+	}
+
+	const char* string::format(const char* fmt, ...)
+	{
+		va_list args;
+		va_start(args, fmt);
+
+		int len = _vscprintf(fmt, args); // terminating '\0'
+		if (len > 0)
+		{
+			auto buffer = std::make_unique<char[]>(len + 1);
+
+			vsprintf_s(buffer.get(), len, fmt, args);
+
+			clear();
+			append(buffer.get());
+		}
+
+		va_end(args);
+
+		return c_str();
+	}
+
+	const char* string::replace_all(const char* old_str, const char* new_str)
+	{
+		size_t pos = 0;
+		while ((pos = find(old_str, pos)) != std::string::npos) {
+			erase(pos, strlen(old_str));
+			insert(pos, new_str);
+			pos++;
+		}
+		return c_str();
+	}
+
+	long long string::to_ll()
+	{
+		return atoll(c_str());
+	}
+
+	const char* string::operator=(const wchar_t* right)
+	{
+		int len = WideCharToMultiByte(CP_ACP, 0, right, -1, NULL, 0, NULL, NULL);
+		if (len > 0)
+		{
+			auto buffer = std::make_unique<char[]>(len + 1);
+
+			WideCharToMultiByte(CP_ACP, 0, right, -1, buffer.get(), len, NULL, NULL);
+
+			clear();
+			append(buffer.get());
+		}
+
+		return c_str();
+	}
+
+	const char* string::operator=(const long long& num)
+	{
+		return this->format("%I64d", num);
+	}
+
+	const bool string::operator==(const long long& num)
+	{
+		return atoll(c_str()) == num ? true : false;
 	}
 
 	namespace strutil {
 		LPCSTR Printf(LPCSTR format, ...)
 		{
-			std::string rs;
+			std::string rt;
 
 			va_list args;
 			va_start(args, format);
-			int len = _vscprintf(format, args) + 1; // terminating '\0'
+
+			int len = _vscprintf(format, args); // terminating '\0'
 			if (len > 0)
 			{
-				char* buffer = new char[len] {};
+				auto buffer = std::make_unique<char[]>(len + 1);
 
-				vsprintf_s(buffer, len, format, args);
+				vsprintf_s(buffer.get(), len, format, args);
 
-				rs.append(buffer, len);
-
-				delete[] buffer;
+				rt.append(buffer.get(), len);
 			}
+
 			va_end(args);
 
-			return rs.c_str();
+			return CStringA(rt.c_str());
 		}
 
-		CStringW Printf(LPCTSTR format, ...)
+		LPCTSTR Printf(LPCTSTR format, ...)
 		{
-			CStringW rs;
+			CStringW rt;
 
 			va_list args;
-
 			va_start(args, format);
+
 			int len = _vscwprintf(format, args) + 1;
 			if (len > 0)
 			{
-				TCHAR* buffer = new TCHAR[len] {};
+				auto buffer = std::make_unique<TCHAR[]>(len + 1);
 
-				vswprintf_s(buffer, len, format, args);
+				vswprintf_s(buffer.get(), len, format, args);
 
-				rs.Append(buffer);
-
-				delete[] buffer;
+				rt.Append(buffer.get());
 			}
+
 			va_end(args);
 
-			return rs;
+			return rt;
 		}
 
-		LPCSTR WtA(LPCTSTR wstr)
+		std::string WtA(LPCTSTR wstr)
 		{
 			int len = WideCharToMultiByte(CP_ACP, 0, wstr, -1, NULL, 0, NULL, NULL);
 			if (len > 0)
 			{
-				char* buffer = new char[len + 1] {};
+				auto buffer = std::make_unique<char[]>(len + 1);
 
-				WideCharToMultiByte(CP_ACP, 0, wstr, -1, buffer, len, NULL, NULL);
+				WideCharToMultiByte(CP_ACP, 0, wstr, -1, buffer.get(), len, NULL, NULL);
 
-				std::string rs(buffer);
-
-				delete[] buffer;
-
-				return rs.c_str();
+				return std::string(buffer.release());
 			}
 
 			return "";
@@ -139,15 +212,11 @@ namespace mps
 			int len = MultiByteToWideChar(CP_ACP, 0, astr, -1, NULL, NULL);
 			if (len > 0)
 			{
-				TCHAR* buffer = new TCHAR[len + 1]{};
+				auto buffer = std::make_unique<TCHAR[]>(len + 1);
 
-				MultiByteToWideChar(CP_ACP, 0, astr, -1, buffer, len);
+				MultiByteToWideChar(CP_ACP, 0, astr, -1, buffer.get(), len);
 
-				CStringW rs(buffer);
-
-				delete[] buffer;
-
-				return rs;
+				return CStringW(buffer.release());
 			}
 
 			return _T("");
@@ -158,36 +227,37 @@ namespace mps
 			int len = MultiByteToWideChar(CP_UTF8, 0, u8str, -1, 0, 0);
 			if (len > 0)
 			{
-				TCHAR* buffer = new TCHAR[len + 1]{};
+				auto buffer = std::make_unique<TCHAR[]>(len + 1);
 
-				MultiByteToWideChar(CP_UTF8, 0, u8str, -1, buffer, len);
+				MultiByteToWideChar(CP_UTF8, 0, u8str, -1, buffer.get(), len);
 
-				CStringW rs(buffer);
-
-				delete[] buffer;
-
-				return rs;
+				return CStringW(buffer.release());
 			}
-			
+
 			return _T("");
 		}
 
-		LPCSTR WtU8(LPCTSTR wstr)
+		std::string U8tA(LPCSTR u8str)
+		{
+			return WtA(U8tW(u8str));
+		}
+
+		std::string WtU8(LPCTSTR wstr)
 		{
 			int len = WideCharToMultiByte(CP_UTF8, 0, wstr, lstrlen(wstr), NULL, 0, NULL, NULL);
 			if (len)
 			{
-				std::string rs(len, 0);
+				auto buffer = std::make_unique<char[]>(len + 1);
 
-				WideCharToMultiByte(CP_UTF8, 0, wstr, -1, (LPSTR)rs.data(), len, NULL, NULL);
+				WideCharToMultiByte(CP_UTF8, 0, wstr, -1, buffer.get(), len, NULL, NULL);
 
-				return rs.c_str();
+				return std::string(buffer.release());
 			}
 
 			return "";
 		}
 
-		BOOL StringParser(IN LPCTSTR data_src, OUT CStringList& sl, LPCTSTR key /*= L";"*/)
+		int StringParser(IN LPCTSTR data_src, OUT CStringList& sl, LPCTSTR key /*= L";"*/)
 		{
 			CString src = data_src;
 			int posPrev = 0;
@@ -206,7 +276,29 @@ namespace mps
 				sl.AddTail(src.Mid(posPrev));
 			}
 
-			return TRUE;
+			return (int)sl.GetCount();
+		}
+
+		int StringParser(IN LPCTSTR data_src, OUT CStringArray& sa, LPCTSTR key /*= L";"*/)
+		{
+			CString src = data_src;
+			int posPrev = 0;
+			int pos = src.Find(key);
+			while (pos > -1)
+			{
+				sa.Add(src.Mid(posPrev, pos - posPrev));
+
+				posPrev = pos + 1;
+
+				pos = src.Find(key, posPrev);
+			}
+
+			if (src.GetLength() > posPrev)
+			{
+				sa.Add(src.Mid(posPrev));
+			}
+
+			return (int)sa.GetCount();
 		}
 
 		CString Num2Str(LONGLONG llNumber, LPCTSTR strSeperator /* = _T(",") */)
@@ -288,7 +380,7 @@ namespace mps
 
 	namespace file {
 
-		CString GetCurrPath()
+		CString GetAppPath()
 		{
 			TCHAR szPath[MAX_PATH_LEN] = L"";
 			GetModuleFileNameW(NULL, szPath, MAX_PATH_LEN);
@@ -298,7 +390,7 @@ namespace mps
 			return strPath;
 		}
 
-		CString GetCurrAppName()
+		CString GetAppName()
 		{
 			TCHAR szPath[MAX_PATH_LEN] = L"";
 			GetModuleFileNameW(NULL, szPath, MAX_PATH_LEN);
@@ -308,12 +400,36 @@ namespace mps
 			return strPath;
 		}
 
-		CString GetCurrDirectory()
+		CString GetBinDir()
 		{
 			TCHAR szPath[MAX_PATH_LEN] = L"";
 			GetModuleFileNameW(NULL, szPath, MAX_PATH_LEN);
 
 			CString strPath(szPath);
+			strPath = strPath.Left(strPath.ReverseFind(L'\\') + 1);
+
+			return strPath;
+		}
+
+		CString GetIniDir()
+		{
+			TCHAR szPath[MAX_PATH_LEN] = L"";
+			GetModuleFileNameW(NULL, szPath, MAX_PATH_LEN);
+
+			CString strPath(szPath);
+			strPath = strPath.Left(strPath.ReverseFind(L'\\'));
+			strPath = strPath.Left(strPath.ReverseFind(L'\\') + 1);
+
+			return GetRootDir() + _T("ini\\");
+		}
+
+		CString GetRootDir()
+		{
+			TCHAR szPath[MAX_PATH_LEN] = L"";
+			GetModuleFileNameW(NULL, szPath, MAX_PATH_LEN);
+
+			CString strPath(szPath);
+			strPath = strPath.Left(strPath.ReverseFind(L'\\'));
 			strPath = strPath.Left(strPath.ReverseFind(L'\\') + 1);
 
 			return strPath;
@@ -433,18 +549,20 @@ namespace mps
 			{
 				bWorking = finder.FindNextFile();
 
+				// file check
 				if (finder.IsArchived())
 				{
 					CString fileNameFind = finder.GetFileName();
 
-					if (fileNameFind == _T(".") || fileNameFind == _T("..") || fileNameFind == _T("Thumbs.db"))
+					if (finder.IsDots() || fileNameFind == _T("Thumbs.db"))
 						continue;
 
-					CString fileName = finder.GetFileTitle();
+					CString fileName = finder.GetFileName();
 
 					slFileName.AddTail(fileName);
 				}
 
+				// directory check
 				if (bIncFolder && finder.IsDirectory())
 				{
 					CString dirName = finder.GetFileName();
@@ -453,12 +571,12 @@ namespace mps
 				}
 			}
 
-			return slFileName.GetCount();
+			return (int)slFileName.GetCount();
 		}
 
-		CString GetDirByProcName(LPCTSTR procName_src)
+		CString GetDirByFileName(LPCTSTR file_name)
 		{
-			CString procName(procName_src);
+			CString procName(file_name);
 
 			procName.MakeLower();
 			if (procName.Find(L".exe") < 0)
@@ -513,6 +631,51 @@ namespace mps
 			}
 
 			return L"";
+		}
+
+		CString	GetFullPath(CString dir, CString file)
+		{
+			int pos = dir.ReverseFind(L'\\');
+			if (pos != dir.GetLength() - 1)
+			{
+				dir.AppendChar(L'\\');
+			}
+
+			return dir + file;
+		}
+
+		BOOL GetWriteTime(CString path, OUT CTime& time)
+		{
+			CFileFind finder;
+			if (finder.FindFile(path))
+			{
+				finder.FindNextFile();
+
+				finder.GetLastWriteTime(time);
+
+				return TRUE;
+			}
+
+			return FALSE;
+		}
+
+		LONGLONG GetFileSize(CString path)
+		{
+			PLARGE_INTEGER pLint = nullptr;
+
+			HANDLE hFile = ::CreateFile(path, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
+			if (INVALID_FILE_SIZE != ::GetFileSizeEx(hFile, pLint))
+			{
+				// 64bit인 경우
+				//printf("64bit file size = %d\n", pLargeInteger.QuadPart);
+
+				// 32bit인 경우
+				//printf("32bit file size = %d\n", pLargeInteger.LowPart);
+
+				return pLint->LowPart;
+			}
+
+			return -1;
 		}
 	}
 
@@ -862,5 +1025,70 @@ namespace mps
 
 			return Os_info.c_str();
 		}
+
+		int	GetSystemDate()
+		{
+			CTime time = CTime::GetCurrentTime();
+			return _ttoi(time.Format(_T("%Y%m%d")));
+		}
+
+		int	GetSystemTime()
+		{
+			CTime time = CTime::GetCurrentTime();
+			return _ttoi(time.Format(_T("%H%M%S")));
+		}
+
+		int	TimeToMinute(int nTime)
+		{
+			int nHour = nTime / 10000;
+			int nMinute = (nTime - (nHour * 10000)) / 100;
+
+			int nResult = nHour * 60 + nMinute;
+
+			return nResult;
+		}
 	}
+
+#if 0
+	cstring::cstring(LPCTSTR src) { Append(src); }
+
+	cstring::cstring(LPCSTR astr) {
+		int len = MultiByteToWideChar(CP_ACP, 0, astr, -1, NULL, NULL);
+		if (len > 0) {
+			auto buffer = std::make_unique<TCHAR[]>(len + 1);
+			MultiByteToWideChar(CP_ACP, 0, astr, -1, buffer.get(), len);
+			Append(buffer.get());
+		}
+	}
+
+	LPCSTR cstring::c_str() {
+		int len = WideCharToMultiByte(CP_ACP, 0, GetString(), -1, NULL, 0, NULL, NULL);
+		if (len > 0) {
+			auto buffer = std::make_unique<char[]>(len + 1);
+			WideCharToMultiByte(CP_ACP, 0, GetString(), -1, buffer.get(), len, NULL, NULL);
+			return CStringA(buffer.get());
+		}
+		return "";
+	}
+
+	LPCTSTR cstring::operator=(LPCSTR right) {
+		int len = MultiByteToWideChar(CP_ACP, 0, right, -1, NULL, NULL);
+		if (len > 0) {
+			auto buffer = std::make_unique<TCHAR[]>(len + 1);
+			MultiByteToWideChar(CP_ACP, 0, right, -1, buffer.get(), len);
+			return CStringW(buffer.get());
+		}
+		return _T("");
+	}
+
+	LPCTSTR cstring::operator=(std::string right) {
+		int len = MultiByteToWideChar(CP_ACP, 0, right.c_str(), -1, NULL, NULL);
+		if (len > 0) {
+			auto buffer = std::make_unique<TCHAR[]>(len + 1);
+			MultiByteToWideChar(CP_ACP, 0, right.c_str(), -1, buffer.get(), len);
+			return CStringW(buffer.get());
+		}
+		return _T("");
+	}
+#endif
 }
