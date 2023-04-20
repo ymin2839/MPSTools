@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "MPSTools.h"
+#include <memory>
 
 #define MAX_PATH_LEN	260
 
@@ -7,7 +8,7 @@ namespace mps
 {
 	cstring::cstring(LPCTSTR src)
 	{
-		this->Append(src);
+		Append(src);
 	}
 
 	cstring::cstring(LPCSTR astr)
@@ -15,13 +16,11 @@ namespace mps
 		int len = MultiByteToWideChar(CP_ACP, 0, astr, -1, NULL, NULL);
 		if (len > 0)
 		{
-			TCHAR* buffer = new TCHAR[len + 1]{};
+			auto buffer = std::make_unique<TCHAR[]>(len + 1);
 
-			MultiByteToWideChar(CP_ACP, 0, astr, -1, buffer, len);
+			MultiByteToWideChar(CP_ACP, 0, astr, -1, buffer.get(), len);
 
-			this->Append(buffer);
-
-			delete[] buffer;
+			Append(buffer.get());
 		}
 	}
 
@@ -30,15 +29,11 @@ namespace mps
 		int len = WideCharToMultiByte(CP_ACP, 0, GetString(), -1, NULL, 0, NULL, NULL);
 		if (len > 0)
 		{
-			char* buffer = new char[len + 1] {};
+			auto buffer = std::make_unique<char[]>(len + 1);
 
-			WideCharToMultiByte(CP_ACP, 0, GetString(), -1, buffer, len, NULL, NULL);
+			WideCharToMultiByte(CP_ACP, 0, GetString(), -1, buffer.get(), len, NULL, NULL);
 
-			std::string rs(buffer);
-
-			delete[] buffer;
-
-			return rs.c_str();
+			return CStringA(buffer.get());
 		}
 
 		return "";
@@ -49,15 +44,11 @@ namespace mps
 		int len = MultiByteToWideChar(CP_ACP, 0, right, -1, NULL, NULL);
 		if (len > 0)
 		{
-			TCHAR* buffer = new TCHAR[len + 1]{};
+			auto buffer = std::make_unique<TCHAR[]>(len + 1);
 
-			MultiByteToWideChar(CP_ACP, 0, right, -1, buffer, len);
+			MultiByteToWideChar(CP_ACP, 0, right, -1, buffer.get(), len);
 
-			CStringW rs(buffer);
-
-			free(buffer);
-
-			return (LPCTSTR)rs;
+			return CStringW (buffer.get());
 		}
 
 		return _T("");
@@ -68,15 +59,11 @@ namespace mps
 		int len = MultiByteToWideChar(CP_ACP, 0, right.c_str(), -1, NULL, NULL);
 		if (len > 0)
 		{
-			TCHAR* buffer = new TCHAR[len + 1]{};
+			auto buffer = std::make_unique<TCHAR[]>(len + 1);
 
-			MultiByteToWideChar(CP_ACP, 0, right.c_str(), -1, buffer, len);
+			MultiByteToWideChar(CP_ACP, 0, right.c_str(), -1, buffer.get(), len);
 
-			CStringW rs(buffer);
-
-			delete[] buffer;
-
-			return (LPCTSTR)rs;
+			return CStringW(buffer.get());
 		}
 
 		return _T("");

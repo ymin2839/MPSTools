@@ -13,7 +13,7 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="mps">
+    <Filter Include="mpstools">
       <UniqueIdentifier>{a96e10c5-ecc2-401f-92c0-9e15ba737120}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -37,7 +37,7 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="MPSTools.h">
-      <Filter>mps</Filter>
+      <Filter>mpstools</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -51,7 +51,7 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="MPSTools.cpp">
-      <Filter>mps</Filter>
+      <Filter>mpstools</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

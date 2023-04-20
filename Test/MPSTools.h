@@ -6,7 +6,7 @@
 // 
 // mp server tools namespace
 // writer : ymin
-// version : 1.1
+// version : 1.2
 //
 namespace mps
 {
