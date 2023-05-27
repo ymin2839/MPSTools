@@ -30,6 +30,7 @@ namespace mps
 
 		CString		u8_wstr();		// utf8 to unicode
 		const char* u8_cstr();		// utf8 to ansi
+		std::string to_utf8();
 
 
 		CString		wstr();							// return unicode

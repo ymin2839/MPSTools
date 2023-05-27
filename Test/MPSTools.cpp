@@ -51,6 +51,23 @@ namespace mps
 		return L"";
 	}
 
+	std::string string::to_utf8()
+	{
+		int len = WideCharToMultiByte(CP_UTF8, 0, wstr(), -1, NULL, 0, NULL, NULL);
+		if (len)
+		{
+			auto buffer = std::make_unique<char[]>(len + 1);
+
+			WideCharToMultiByte(CP_UTF8, 0, wstr(), -1, buffer.get(), len, NULL, NULL);
+
+			std::string res(buffer.get());
+
+			return res;
+		}
+
+		return "";
+	}
+
 	const char* string::u8_cstr()
 	{
 		std::wstring wstr = u8_wstr().operator LPCWSTR();
