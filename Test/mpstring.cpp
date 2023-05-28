@@ -1,13 +1,10 @@
 ﻿#include "pch.h"
 #include "mpstring.h"
-#include "atltime.h"
 #include <memory>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
-#define MAX_PATH_LEN	260
 
 namespace mps
 {
