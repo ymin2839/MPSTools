@@ -120,7 +120,7 @@ namespace mps
 
 		va_end(args);
 
-		return c_str();
+		return *this;
 	}
 
 	string string::format(const wchar_t* fmt, ...)
@@ -140,10 +140,10 @@ namespace mps
 
 		va_end(args);
 
-		return c_str();
+		return *this;
 	}
 
-	const char* string::replace_all(const char* old_str, const char* new_str)
+	string string::replace_all(const char* old_str, const char* new_str)
 	{
 		size_t pos = 0;
 		while ((pos = find(old_str, pos)) != std::string::npos) {
@@ -152,6 +152,24 @@ namespace mps
 			pos++;
 		}
 		return c_str();
+	}
+
+	string string::ltrim()
+	{
+		erase(0, find_first_not_of(" \n\r\t\f\v"));
+		return c_str();
+	}
+
+	string string::rtrim()
+	{
+		erase(find_last_not_of(" \n\r\t\f\v") + 1);
+		return c_str();
+	}
+
+	string string::trim()
+	{
+		ltrim();
+		return rtrim();
 	}
 
 	long long string::to_ll()
@@ -177,7 +195,7 @@ namespace mps
 
 	const char* string::operator=(const long long& num)
 	{
-		return this->format("%I64d", num).c_str();
+		return format("%I64d", num).c_str();
 	}
 
 	const bool string::operator==(const long long& num)

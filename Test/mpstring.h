@@ -42,8 +42,10 @@ namespace mps
 		string format(const char* fmt, ...);
 		string format(const wchar_t* fmt, ...);
 
-		const char* replace_all(const char* old_str, const char* new_str);
-
+		string replace_all(const char* old_str, const char* new_str);
+		string ltrim();
+		string rtrim();
+		string trim();
 
 		const char* operator=(const wchar_t* right);
 		const char* operator=(const CString& right);

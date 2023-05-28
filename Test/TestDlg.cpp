@@ -78,19 +78,24 @@ BOOL CTestDlg::OnInitDialog()
 
 	{
 		mps::string utf8_fmt;
-		std::string utf8_ret = utf8_fmt.format(u8R"({"한글도 되나요?":"네","hangle ok?":"%s"})", "yes");
+		std::string utf8_ret = utf8_fmt.format(u8R"({"한글도 되나요?":"%s","hangle ok?":"yes"})", "네");
 
 		mps::string cstr_fmt;
-		std::string cstr_ret = cstr_fmt.format(R"({"한글도 되나요?":"네","hangle ok?":"%s"})", "yes");
+		std::string cstr_ret = cstr_fmt.format(R"({"한글도 되나요?":"%s","hangle ok?":"yes"})", "네");
 
 		mps::string wstr_fmt;
-		std::wstring wstr_ret = wstr_fmt.format(LR"({"한글도 되나요?":"네","hangle ok?":"%s"})", L"yes").wstr();
+		std::wstring wstr_ret = wstr_fmt.format(LR"({"한글도 되나요?":"%s","hangle ok?":"yes"})", L"네").wstr();
 	}
 
 	{
-		mps::string mpstr = u8R"(한글이 되나요?)";
+		mps::string mpstr = u8R"({"한글도 되나요?":"네","hangle ok?":"yes"})";
 		CString wstr = mpstr.utf8_to_wstr();
 		std::string cstr = mpstr.utf8_to_cstr();
+	}
+
+	{
+		mps::string str = "  hihi  ";
+		CString res = str.trim().wstr();
 	}
 
 	return TRUE;
