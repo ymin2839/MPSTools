@@ -3,7 +3,9 @@
 #include "Test.h"
 #include "TestDlg.h"
 #include "afxdialogex.h"
-#include "MPSTools.h"
+#include "mpstring.h"
+
+#include <string>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,7 +53,7 @@ BOOL CTestDlg::OnInitDialog()
 	
 	// conv unicode to ansi
 	{
-		TCHAR buff[1024 + 1]{};
+		WCHAR buff[1024 + 1]{};
 		buff[0] = L'a';
 		buff[1024] = L'\0';
 
@@ -59,16 +61,36 @@ BOOL CTestDlg::OnInitDialog()
 		rs.Format("%s", mps::strutil::WtA(buff));
 	}
 
-	// cstring
+	// mps::string
 	{
-		mps::cstring c(L"hangle ok? 한글되니?");
-		mps::cstring a("hangle ok? 한글되니?");
+		mps::string wstr(L"hangle ok? 한글되니?");
+		mps::string cstr("hangle ok? 한글되니?");
+	}
 
-		LPCSTR az = { "hangle ok? 한글되니?" };
-		LPCTSTR wz = { L"hangle ok? 한글되니?" };
+	{
+		mps::string wstr_oper = { L"hangle ok? 한글되니?" };
+		mps::string cstr_oper = { "hangle ok? 한글되니?" };
+	}
 
-		mps::cstring astr = az;
-		mps::cstring wstr = wz;
+	{
+		mps::string fmt;
+	}
+
+	{
+		mps::string utf8_fmt;
+		std::string utf8_ret = utf8_fmt.format(u8R"({"한글도 되나요?":"네","hangle ok?":"%s"})", "yes");
+
+		mps::string cstr_fmt;
+		std::string cstr_ret = cstr_fmt.format(R"({"한글도 되나요?":"네","hangle ok?":"%s"})", "yes");
+
+		mps::string wstr_fmt;
+		std::wstring wstr_ret = wstr_fmt.format(LR"({"한글도 되나요?":"네","hangle ok?":"%s"})", L"yes").wstr();
+	}
+
+	{
+		mps::string mpstr = u8R"(한글이 되나요?)";
+		CString wstr = mpstr.utf8_to_wstr();
+		std::string cstr = mpstr.utf8_to_cstr();
 	}
 
 	return TRUE;

@@ -36,7 +36,10 @@
     <ClInclude Include="pch.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="MPSTools.h">
+    <ClInclude Include="mpstring.h">
+      <Filter>mpstools</Filter>
+    </ClInclude>
+    <ClInclude Include="mpsfile.h">
       <Filter>mpstools</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,7 +53,10 @@
     <ClCompile Include="pch.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="MPSTools.cpp">
+    <ClCompile Include="mpstring.cpp">
+      <Filter>mpstools</Filter>
+    </ClCompile>
+    <ClCompile Include="mpsfile.cpp">
       <Filter>mpstools</Filter>
     </ClCompile>
   </ItemGroup>
