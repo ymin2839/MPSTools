@@ -18,18 +18,21 @@ namespace mps
 		const int len(WideCharToMultiByte(CP_ACP, 0, wstr, -1, NULL, 0, NULL, NULL));
 		if (len > 0)
 		{
-			auto buffer = std::make_unique<char[]>(len + 1);
+			char* buffer = new char[len + 1];
+			memset(buffer, 0, sizeof(char) * len + 1);
 
-			WideCharToMultiByte(CP_ACP, 0, wstr, -1, buffer.get(), len, NULL, NULL);
+			WideCharToMultiByte(CP_ACP, 0, wstr, -1, buffer, len, NULL, NULL);
 
 			clear();
-			append(buffer.get());
+			append(buffer);
+
+			delete[] buffer;
 		}
 	}
 
-	string::string(const long long& num)
+	string::string(const double& num)
 	{
-		format("%I64d", num);
+		format("%d", num);
 	}
 
 	string::string(const std::string& src)
@@ -37,113 +40,110 @@ namespace mps
 		*this = src.c_str();
 	}
 
-	CString string::utf8_to_wstr()
+	CString string::u8_wstr()
 	{
 		int len = MultiByteToWideChar(CP_UTF8, 0, c_str(), -1, 0, 0);
 		if (len > 0)
 		{
-			auto buffer = std::make_unique<TCHAR[]>(len + 1);
+			wchar_t* buffer = new wchar_t[len + 1];
+			memset(buffer, 0, sizeof(wchar_t) * len + 1);
 
-			MultiByteToWideChar(CP_UTF8, 0, c_str(), -1, buffer.get(), len);
+			MultiByteToWideChar(CP_UTF8, 0, c_str(), -1, buffer, len);
 
-			return CStringW(buffer.get());
+			return CStringW(buffer);
+
+			delete[] buffer;
 		}
 
 		return L"";
 	}
 
-	const char* string::to_utf8()
+	std::string string::to_utf8()
 	{
 		int len = WideCharToMultiByte(CP_UTF8, 0, wstr(), -1, NULL, 0, NULL, NULL);
 		if (len)
 		{
-			auto buffer = std::make_unique<char[]>(len + 1);
+			char* buffer = new char[len + 1];
+			memset(buffer, 0, sizeof(char) * len + 1);
 
-			WideCharToMultiByte(CP_UTF8, 0, wstr(), -1, buffer.get(), len, NULL, NULL);
+			WideCharToMultiByte(CP_UTF8, 0, wstr(), -1, buffer, len, NULL, NULL);
 
-			std::string res(buffer.get());
+			std::string res(buffer);
 
-			return res.c_str();
+			delete[] buffer;
+
+			return res;
 		}
-
+		
 		return "";
 	}
 
-	const char* string::utf8_to_cstr()
+	const char* string::u8_cstr()
 	{
-		std::wstring wstr = utf8_to_wstr().operator LPCWSTR();
+		std::wstring wstr = u8_wstr().operator LPCWSTR();
 
 		int len = WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, NULL, 0, NULL, NULL);
 		if (len > 0)
 		{
-			auto buffer = std::make_unique<char[]>(len + 1);
+			char* buffer = new char[len + 1];
+			memset(buffer, 0, sizeof(char) * len + 1);
 
-			WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, buffer.get(), len, NULL, NULL);
+			WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, buffer, len, NULL, NULL);
 
 			clear();
-			append(buffer.get());
+			append(buffer);
+
+			delete[] buffer;
 		}
 
 		return c_str();
 	}
 
-	CString string::wstr()
+	CStringW string::wstr()
 	{
 		int len = MultiByteToWideChar(CP_ACP, 0, c_str(), -1, NULL, NULL);
 		if (len > 0)
 		{
-			auto buffer = std::make_unique<wchar_t[]>(len + 1);
+			wchar_t* buffer = new wchar_t[len + 1];
+			memset(buffer, 0, sizeof(wchar_t) * len + 1);
 
-			MultiByteToWideChar(CP_ACP, 0, c_str(), -1, buffer.get(), len);
+			MultiByteToWideChar(CP_ACP, 0, c_str(), -1, buffer, len);
 
-			return CString(buffer.get());
+			CStringW res(buffer);
+
+			delete[] buffer;
+
+			return res;
 		}
 
 		return L"";
 	}
 
-	string string::format(const char* fmt, ...)
+	const char* string::format(const char* fmt, ...)
 	{
 		va_list args;
 		va_start(args, fmt);
 
-		int len = _vscprintf(fmt, args); // terminating '\0'
+		int len = _vscprintf(fmt, args);
 		if (len > 0)
 		{
-			auto buffer = std::make_unique<char[]>(len + 1);
+			char* buffer = new char[len + 1];
+			memset(buffer, 0, sizeof(char) * len + 1);
 
-			vsprintf_s(buffer.get(), len + 1, fmt, args);
+			vsprintf_s(buffer, len + 1, fmt, args);
 
 			clear();
-			append(buffer.get());
+			append(buffer);
+
+			delete[] buffer;
 		}
 
 		va_end(args);
 
-		return *this;
+		return c_str();
 	}
 
-	string string::format(const wchar_t* fmt, ...)
-	{
-		va_list args;
-		va_start(args, fmt);
-
-		int len = _vscwprintf(fmt, args) + 1;
-		if (len > 0)
-		{
-			auto buffer = std::make_unique<wchar_t[]>(len + 1);
-
-			vswprintf_s(buffer.get(), len, fmt, args);
-
-			*this = (wchar_t*)buffer.get();
-		}
-
-		va_end(args);
-
-		return *this;
-	}
-
-	string string::replace_all(const char* old_str, const char* new_str)
+	const char* string::replace_all(const char* old_str, const char* new_str)
 	{
 		size_t pos = 0;
 		while ((pos = find(old_str, pos)) != std::string::npos) {
@@ -154,27 +154,9 @@ namespace mps
 		return c_str();
 	}
 
-	string string::ltrim()
+	double string::to_ll()
 	{
-		erase(0, find_first_not_of(" \n\r\t\f\v"));
-		return c_str();
-	}
-
-	string string::rtrim()
-	{
-		erase(find_last_not_of(" \n\r\t\f\v") + 1);
-		return c_str();
-	}
-
-	string string::trim()
-	{
-		ltrim();
-		return rtrim();
-	}
-
-	long long string::to_ll()
-	{
-		return atoll(c_str());
+		return atoi(c_str());
 	}
 
 	const char* string::operator=(const wchar_t* right)
@@ -182,31 +164,34 @@ namespace mps
 		int len = WideCharToMultiByte(CP_ACP, 0, right, -1, NULL, 0, NULL, NULL);
 		if (len > 0)
 		{
-			auto buffer = std::make_unique<char[]>(len + 1);
+			char* buffer = new char[len + 1];
+			memset(buffer, 0, sizeof(char) * len + 1);
 
-			WideCharToMultiByte(CP_ACP, 0, right, -1, buffer.get(), len, NULL, NULL);
+			WideCharToMultiByte(CP_ACP, 0, right, -1, buffer, len, NULL, NULL);
 
 			clear();
-			append(buffer.get());
+			append(buffer);
+
+			delete[] buffer;
 		}
 
 		return c_str();
 	}
 
-	const char* string::operator=(const long long& num)
+	const char* string::operator=(const double& num)
 	{
-		return format("%I64d", num).c_str();
+		return this->format("%I64d", num);
 	}
 
-	const bool string::operator==(const long long& num)
+	const bool string::operator==(const double& num)
 	{
-		return atoll(c_str()) == num ? true : false;
+		return atof(c_str()) == num ? true : false;
 	}
 
-	namespace strutil {
-		std::string Printf(LPCSTR format, ...)
+	namespace util {
+		CStringA Printf(LPCSTR format, ...)
 		{
-			std::string rt;
+			CStringA rt;
 
 			va_list args;
 			va_start(args, format);
@@ -214,16 +199,19 @@ namespace mps
 			int len = _vscprintf(format, args); // terminating '\0'
 			if (len > 0)
 			{
-				auto buffer = std::make_unique<char[]>(len + 1);
+				char* buffer = new char[len + 1];
+				memset(buffer, 0, sizeof(char) * len + 1);
 
-				vsprintf_s(buffer.get(), len + 1, format, args);
+				vsprintf_s(buffer, len + 1, format, args);
 
-				rt.append(buffer.get(), len);
+				rt.Append(buffer);
+
+				delete[] buffer;
 			}
 
-			va_end(args);
+			va_end(args);			
 
-			return rt.c_str();
+			return rt;
 		}
 
 		CStringW Printf(LPCTSTR format, ...)
@@ -233,14 +221,17 @@ namespace mps
 			va_list args;
 			va_start(args, format);
 
-			int len = _vscwprintf(format, args) + 1;
+			int len = _vscwprintf(format, args);
 			if (len > 0)
 			{
-				auto buffer = std::make_unique<TCHAR[]>(len + 1);
+				wchar_t* buffer = new wchar_t[len + 1];
+				memset(buffer, 0, sizeof(wchar_t) * len + 1);
 
-				vswprintf_s(buffer.get(), len, format, args);
+				vswprintf_s(buffer, len + 1, format, args);
 
-				rt.Append(buffer.get());
+				rt.Append(buffer);
+
+				delete[] buffer;
 			}
 
 			va_end(args);
@@ -253,11 +244,16 @@ namespace mps
 			int len = WideCharToMultiByte(CP_ACP, 0, wstr, -1, NULL, 0, NULL, NULL);
 			if (len > 0)
 			{
-				auto buffer = std::make_unique<char[]>(len + 1);
+				char* buffer = new char[len + 1];
+				memset(buffer, 0, sizeof(char) * len + 1);
 
-				WideCharToMultiByte(CP_ACP, 0, wstr, -1, buffer.get(), len, NULL, NULL);
+				WideCharToMultiByte(CP_ACP, 0, wstr, -1, buffer, len, NULL, NULL);
 
-				return std::string(buffer.get());
+				std::string res(buffer);
+
+				delete[] buffer;
+
+				return res;
 			}
 
 			return "";
@@ -268,11 +264,16 @@ namespace mps
 			int len = MultiByteToWideChar(CP_ACP, 0, astr, -1, NULL, NULL);
 			if (len > 0)
 			{
-				auto buffer = std::make_unique<TCHAR[]>(len + 1);
+				wchar_t* buffer = new wchar_t[len + 1];
+				memset(buffer, 0, sizeof(wchar_t) * len + 1);
 
-				MultiByteToWideChar(CP_ACP, 0, astr, -1, buffer.get(), len);
+				MultiByteToWideChar(CP_ACP, 0, astr, -1, buffer, len);
 
-				return CStringW(buffer.get());
+				CStringW res(buffer);
+
+				delete[] buffer;
+
+				return res;
 			}
 
 			return _T("");
@@ -283,11 +284,16 @@ namespace mps
 			int len = MultiByteToWideChar(CP_UTF8, 0, u8str, -1, 0, 0);
 			if (len > 0)
 			{
-				auto buffer = std::make_unique<TCHAR[]>(len + 1);
+				wchar_t* buffer = new wchar_t[len + 1];
+				memset(buffer, 0, sizeof(wchar_t) * len + 1);
 
-				MultiByteToWideChar(CP_UTF8, 0, u8str, -1, buffer.get(), len);
+				MultiByteToWideChar(CP_UTF8, 0, u8str, -1, buffer, len);
 
-				return CStringW(buffer.get());
+				CStringW res(buffer);
+
+				delete[] buffer;
+
+				return res;
 			}
 
 			return _T("");
@@ -303,11 +309,16 @@ namespace mps
 			int len = WideCharToMultiByte(CP_UTF8, 0, wstr, lstrlen(wstr), NULL, 0, NULL, NULL);
 			if (len)
 			{
-				auto buffer = std::make_unique<char[]>(len + 1);
+				char* buffer = new char[len + 1];
+				memset(buffer, 0, sizeof(char) * len + 1);
 
-				WideCharToMultiByte(CP_UTF8, 0, wstr, -1, buffer.get(), len, NULL, NULL);
+				WideCharToMultiByte(CP_UTF8, 0, wstr, -1, buffer, len, NULL, NULL);
 
-				return std::string(buffer.get());
+				std::string res(buffer);
+
+				delete[] buffer;
+
+				return res;
 			}
 
 			return "";

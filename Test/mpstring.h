@@ -1,21 +1,22 @@
-﻿#pragma once
-
-#include "atlstr.h"
-#include <string>
-
-/// <summary>
+﻿/// <summary>
 /// 
 /// mp string tools namespace
 /// 
 /// writer : ymin
-/// version : 2.5
+/// version : 1.6
 /// version desc :
 ///   - change string class
 ///	  - data type theorem
 ///   - delete file,sys namespace
+///   - name chage strutil >> util
+///   - util::printf return type change
 /// 
 /// </summary>
 
+#pragma once
+
+#include "atlstr.h"
+#include <string>
 
 namespace mps
 {
@@ -25,39 +26,35 @@ namespace mps
 		string() {}
 		string(const char* src);
 		string(const wchar_t* src);
-		string(const long long& num);
+		string(const double& num);
 		string(const std::string& src);
 
 
-		CString		utf8_to_wstr();		// utf8 to unicode
-		const char* utf8_to_cstr();		// utf8 to ansi
-		const char* to_utf8();
+		CStringW	u8_wstr();		// utf8 to unicode
+		const char* u8_cstr();		// utf8 to ansi
+		std::string to_utf8();
 
-
-		CString		wstr();							// return unicode
+		CStringW	wstr();							// return unicode
 		const char* cstr() { return c_str(); }		// return char*
 
-		long long to_ll();
+		double to_ll();
 
-		string format(const char* fmt, ...);
-		string format(const wchar_t* fmt, ...);
+		const char* format(const char* fmt, ...);
 
-		string replace_all(const char* old_str, const char* new_str);
-		string ltrim();
-		string rtrim();
-		string trim();
+		const char* replace_all(const char* old_str, const char* new_str);
+
 
 		const char* operator=(const wchar_t* right);
-		const char* operator=(const CString& right);
-		const char* operator=(const long long& num);
-		const bool operator==(const long long& num);
+		const char* operator=(const CStringW& right);
+		const char* operator=(const double& num);
+		const bool operator==(const double& num);
 	};
 
-	namespace strutil
+	namespace util
 	{
 		// format string
 		CStringW		Printf(LPCTSTR fmt, ...);
-		std::string		Printf(LPCSTR fmt, ...);
+		CStringA		Printf(LPCSTR fmt, ...);
 
 		// convert string
 		std::string		WtA(LPCTSTR wstr);	// convert unicode->string
