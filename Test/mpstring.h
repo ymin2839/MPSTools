@@ -30,12 +30,12 @@ namespace mps
 		string(const std::string& src);
 
 
-		CString		utf8_to_wstr();		// utf8 to unicode
+		CStringW	utf8_to_wstr();		// utf8 to unicode
 		const char* utf8_to_cstr();		// utf8 to ansi
 		const char* to_utf8();
 
 
-		CString		wstr();							// return unicode
+		CStringW	wstr();							// return unicode
 		const char* cstr() { return c_str(); }		// return char*
 
 		long long to_ll();
@@ -49,7 +49,7 @@ namespace mps
 		string trim();
 
 		const char* operator=(const wchar_t* right);
-		const char* operator=(const CString& right);
+		const char* operator=(const CStringW& right);
 		const char* operator=(const long long& num);
 		const bool operator==(const long long& num);
 	};
@@ -61,11 +61,11 @@ namespace mps
 		CStringA		Printf(LPCSTR fmt, ...);
 
 		// convert string
-		std::string		WtA(LPCTSTR wstr);	// convert unicode->string
+		CStringA		WtA(LPCTSTR wstr);	// convert unicode->string
 		CStringW		AtW(LPCSTR astr);	// convert string->unicode
 		CStringW		U8tW(LPCSTR u8str);	// convert utf8->CStringW
-		std::string		U8tA(LPCSTR u8str);	// convert utf8->string
-		std::string		WtU8(LPCTSTR wstr);	// convert unicode->utf8
+		CStringA		U8tA(LPCSTR u8str);	// convert utf8->string
+		CStringA		WtU8(LPCTSTR wstr);	// convert unicode->utf8
 
 		// string parser
 		int				StringParser(IN LPCTSTR src, OUT CStringList& sl, LPCTSTR key = L";");

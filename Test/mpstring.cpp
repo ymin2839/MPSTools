@@ -248,7 +248,7 @@ namespace mps
 			return rt;
 		}
 
-		std::string WtA(LPCTSTR wstr)
+		CStringA WtA(LPCTSTR wstr)
 		{
 			int len = WideCharToMultiByte(CP_ACP, 0, wstr, -1, NULL, 0, NULL, NULL);
 			if (len > 0)
@@ -257,7 +257,7 @@ namespace mps
 
 				WideCharToMultiByte(CP_ACP, 0, wstr, -1, buffer.get(), len, NULL, NULL);
 
-				return std::string(buffer.get());
+				return CStringA(buffer.get());
 			}
 
 			return "";
@@ -293,12 +293,12 @@ namespace mps
 			return _T("");
 		}
 
-		std::string U8tA(LPCSTR u8str)
+		CStringA U8tA(LPCSTR u8str)
 		{
 			return WtA(U8tW(u8str));
 		}
 
-		std::string WtU8(LPCTSTR wstr)
+		CStringA WtU8(LPCTSTR wstr)
 		{
 			int len = WideCharToMultiByte(CP_UTF8, 0, wstr, lstrlen(wstr), NULL, 0, NULL, NULL);
 			if (len)
@@ -307,7 +307,7 @@ namespace mps
 
 				WideCharToMultiByte(CP_UTF8, 0, wstr, -1, buffer.get(), len, NULL, NULL);
 
-				return std::string(buffer.get());
+				return CStringA(buffer.get());
 			}
 
 			return "";
