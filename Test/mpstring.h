@@ -8,7 +8,7 @@
 /// mp string tools namespace
 /// 
 /// writer : ymin
-/// version : 2.5
+/// version : 2.6
 /// version desc :
 ///   - change string class
 ///	  - data type theorem
@@ -53,11 +53,11 @@ namespace mps
 		const bool operator==(const long long& num);
 	};
 
-	namespace strutil
+	namespace util
 	{
 		// format string
 		CStringW		Printf(LPCTSTR fmt, ...);
-		std::string		Printf(LPCSTR fmt, ...);
+		CStringA		Printf(LPCSTR fmt, ...);
 
 		// convert string
 		std::string		WtA(LPCTSTR wstr);	// convert unicode->string

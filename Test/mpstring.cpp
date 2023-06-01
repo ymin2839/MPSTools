@@ -203,10 +203,10 @@ namespace mps
 		return atoll(c_str()) == num ? true : false;
 	}
 
-	namespace strutil {
-		std::string Printf(LPCSTR format, ...)
+	namespace util {
+		CStringA Printf(LPCSTR format, ...)
 		{
-			std::string rt;
+			CStringA rt;
 
 			va_list args;
 			va_start(args, format);
@@ -218,12 +218,12 @@ namespace mps
 
 				vsprintf_s(buffer.get(), len + 1, format, args);
 
-				rt.append(buffer.get(), len);
+				rt.Append(buffer.get());
 			}
 
 			va_end(args);
 
-			return rt.c_str();
+			return rt;
 		}
 
 		CStringW Printf(LPCTSTR format, ...)
@@ -233,12 +233,12 @@ namespace mps
 			va_list args;
 			va_start(args, format);
 
-			int len = _vscwprintf(format, args) + 1;
+			int len = _vscwprintf(format, args);
 			if (len > 0)
 			{
 				auto buffer = std::make_unique<TCHAR[]>(len + 1);
 
-				vswprintf_s(buffer.get(), len, format, args);
+				vswprintf_s(buffer.get(), len + 1, format, args);
 
 				rt.Append(buffer.get());
 			}
