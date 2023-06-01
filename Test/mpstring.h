@@ -13,7 +13,8 @@
 ///   - change string class
 ///	  - data type theorem
 ///   - delete file,sys namespace
-/// 
+///   - change name is strutil to util
+///   - util::printf return type change : std::string to CStringA
 /// </summary>
 
 
