@@ -65,6 +65,7 @@ BOOL CTestDlg::OnInitDialog()
 	{
 		mps::string wstr(L"hangle ok? 한글되니?");
 		mps::string cstr("hangle ok? 한글되니?");
+		mps::string ustr(std::string(u8R"(hangle ok? 한글되니?)"));
 	}
 
 	{
@@ -73,7 +74,8 @@ BOOL CTestDlg::OnInitDialog()
 	}
 
 	{
-		mps::string fmt;
+		mps::string mpstr = u8R"({"한글도 되나요?":"네","hangle ok?":"yes"})";
+		const char* strptr = mpstr.data();
 	}
 
 	{

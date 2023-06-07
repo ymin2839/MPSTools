@@ -8,13 +8,10 @@
 /// mp string tools namespace
 /// 
 /// writer : ymin
-/// version : 2.6
+/// version : 2.7
 /// version desc :
-///   - change string class
-///	  - data type theorem
-///   - delete file,sys namespace
-///   - change name is strutil to util
-///   - util::printf return type change : std::string to CStringA
+/// - simple utf8_to_str func name u8_utf
+/// - constructor for utf8
 /// </summary>
 
 
@@ -23,20 +20,28 @@ namespace mps
 	class string : public std::string
 	{
 	public:
-		string() {}
+		string() {}		
 		string(const char* src);
 		string(const wchar_t* src);
 		string(const long long& num);
-		string(const std::string& src);
+
+		// input string to ansi
+		// ex string(utf8_c_str(), CP_UTF8) save memory to ansi string
+		string(const std::string& src, int src_codepage = CP_UTF8);
 
 
-		CStringW	utf8_to_wstr();		// utf8 to unicode
-		const char* utf8_to_cstr();		// utf8 to ansi
-		const char* to_utf8();
+		CStringW		utf8_to_wstr();		// utf8 to unicode
+		std::string		utf8_to_cstr();		// utf8 to ansi		
+		std::string		to_utf8str();
+		
+		CStringW		u8_wstr() { return utf8_to_wstr(); }	// simple utf8 to unicode
+		std::string		u8_cstr() { return utf8_to_cstr(); }	// simple utf8 to ansi
+
+		std::string		SetUtf8String(const char* src);
 
 
-		CStringW	wstr();							// return unicode
-		const char* cstr() { return c_str(); }		// return char*
+		CStringW		wstr();							// return unicode
+		std::string		cstr() { return c_str(); }		// return char*
 
 		long long to_ll();
 
@@ -75,18 +80,4 @@ namespace mps
 		CString			Num2Str(LONGLONG llNumber, LPCTSTR strSeperator = _T(","));	// number to string
 		CString			Flt2Str(double dNumber, BYTE cDecimal = 0, LPCTSTR strSeperator = _T(","));
 	}
-	
-#if 0
-	class cstring : public CString
-	{
-	public:
-		cstring() {}
-		cstring(LPCTSTR src);
-		cstring(LPCSTR src);
-		LPCSTR c_str();
-
-		LPCTSTR operator=(LPCSTR right);
-		LPCTSTR operator=(std::string right);
-	};
-#endif
 }
