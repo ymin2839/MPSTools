@@ -41,7 +41,7 @@ namespace mps
 
 
 		CStringW		wstr();							// return unicode
-		std::string		cstr() { return c_str(); }		// return char*
+		const char*		cstr() { return c_str(); }		// return char*
 
 		long long to_ll();
 
